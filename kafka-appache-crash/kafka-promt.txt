@@ -15,6 +15,8 @@ Consuming message
 
 bin\windows\kafka-console-consumer.bat --topic user-topic --from-beginning --bootstrap-server localhost:9092
 
+bin\windows\kafka-console-consumer.bat --topic Location-update-topic --from-beginning --bootstrap-server localhost:9092
+
 # Producer configuration
 
 spring.kafka.producer.bootstrap-servers=localhost:9092
@@ -30,3 +32,7 @@ spring.kafka.consumer.group-id=group-id
 spring.kafka.consumer.auto-offset-reset=earliest
 spring.kafka.consumer.key-deserializer=org.apache.kafka.common.serialization.StringDeserializer
 spring.kafka.consumer.value-deserializer=org.apache.kafka.common.serialization.StringDeserializer
+
+
+Postgre:  username: postgres
+    password: Apple123!@#
