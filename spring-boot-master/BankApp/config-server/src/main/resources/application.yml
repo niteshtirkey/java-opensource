@@ -1,0 +1,31 @@
+server:
+  port: 8888
+spring:
+  application:
+    name: config-server
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+  cloud:
+    compatibility-verifier:
+      enabled: false
+    config:
+      server:
+        git:
+          uri: https://github.com/niteshtirkey/java-opensource
+          search-paths: spring-boot-master/BankApp/config-server
+          default-label: main
+          clone-on-start: true
+          timeout: 10
+  security:
+    user:
+      name: configadmin
+      password: config@123
+management:
+  endpoints:
+    web:
+      exposure:
+        exclude:
+          - health
+          - info
+          - metrics
