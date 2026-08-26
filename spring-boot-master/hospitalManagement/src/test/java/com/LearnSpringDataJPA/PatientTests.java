@@ -27,14 +27,16 @@ public class PatientTests {
 
     @Test
     public void testPatientRepository() {
-        List<Patient> patientList = patientRepository.findAll();
+//        List<Patient> patientList = patientRepository.findAll();
+        List<Patient> patientList = patientRepository.findAllPatientWithAppointment();
+
         System.out.println(patientList);
 
-        Patient p1 = new Patient();
-        p1.setName("Test Patient");
-        p1.setEmail("test.patient@example.com");
-        patientRepository.save(p1);
-        patientRepository.delete(p1);
+    //        Patient p1 = new Patient();
+    //        p1.setName("Test Patient");
+    //        p1.setEmail("test.patient@example.com");
+    //        patientRepository.save(p1);
+    //        patientRepository.delete(p1);
     }
 
     @Test
