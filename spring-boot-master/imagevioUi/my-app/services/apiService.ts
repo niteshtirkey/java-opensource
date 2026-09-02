@@ -1,24 +1,42 @@
+import axios from "axios";
 import { ImageEditResponse } from "@/types/editor";
+import { SecuritySanitizer } from "@/utils/security";
+
+const apiClient = axios.create({
+  baseURL: "/api/proxy",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  timeout: 30000,
+});
+
+export async function initSession(sessionId: string) {
+  const response = await apiClient.post("/api/sessions/init", { sessionId });
+  return response.data;
+}
 
 export async function sendPromptCommand(
   prompt: string,
   sessionId?: string | null
 ): Promise<ImageEditResponse> {
-  const response = await fetch("/api/proxy/api/v1/imagevio/parse", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...(sessionId ? { "X-Session-ID": sessionId } : {}),
-    },
-    body: JSON.stringify({ prompt }),
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(
-      errorData.error_message || `Server responded with status ${response.status}`
-    );
+  const validation = SecuritySanitizer.validatePrompt(prompt);
+  if (!validation.valid) {
+    return {
+      session_status: "blocked",
+      error_message: validation.error || "Input failed security validation.",
+      parsed_operations: [],
+    };
   }
 
-  return response.json();
+  const cleanPrompt = SecuritySanitizer.sanitize(prompt);
+
+  const response = await apiClient.post(
+    "/api/parse/command",
+    { prompt: cleanPrompt },
+    {
+      headers: sessionId ? { "X-Session-ID": sessionId } : {},
+    }
+  );
+
+  return response.data;
 }

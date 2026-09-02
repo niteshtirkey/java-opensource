@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: imagevio
+  datasource:
+    url: jdbc:postgresql://localhost:5432/imagevio
+    username: postgres
+    password: Apple123!@#
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+server:
+  port: 8080
+
+security:
+  jwt:
+    secret: "ImgevioSuperSecureSecretKeyThatIsAtLeast256BitsLongForProductionSecurityHS256!!"
+    expiration: 86400000 # 24 hours
+  rate-limit:
+    enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics

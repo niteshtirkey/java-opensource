@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 @Service
 public class SecurityGuardrailService {
 
-    // Injection & Jailbreak patterns
+    // Prompt injection & jailbreak regex patterns
     private static final Pattern[] INJECTION_PATTERNS = new Pattern[]{
             Pattern.compile("disregard\\s+previous\\s+instructions", Pattern.CASE_INSENSITIVE),
             Pattern.compile("ignore\\s+(all\\s+)?(previous|past)\\s+instructions", Pattern.CASE_INSENSITIVE),
@@ -15,16 +15,18 @@ public class SecurityGuardrailService {
             Pattern.compile("system\\s+prompt", Pattern.CASE_INSENSITIVE),
             Pattern.compile("you\\s+are\\s+now\\s+a", Pattern.CASE_INSENSITIVE),
             Pattern.compile("bypass\\s+(operating\\s+)?boundaries", Pattern.CASE_INSENSITIVE),
-            Pattern.compile("sudo\\s+", Pattern.CASE_INSENSITIVE),
-            Pattern.compile("/bin/(sh|bash)", Pattern.CASE_INSENSITIVE)
+            Pattern.compile("DROP\\s+TABLE", Pattern.CASE_INSENSITIVE),
+            Pattern.compile("DELETE\\s+FROM", Pattern.CASE_INSENSITIVE),
+            Pattern.compile("UNION\\s+SELECT", Pattern.CASE_INSENSITIVE),
+            Pattern.compile("eval\\s*\\(", Pattern.CASE_INSENSITIVE),
+            Pattern.compile("exec\\s*\\(", Pattern.CASE_INSENSITIVE),
+            Pattern.compile("system\\s*\\(", Pattern.CASE_INSENSITIVE),
+            Pattern.compile("/bin/(sh|bash)", Pattern.CASE_INSENSITIVE),
+            Pattern.compile("`|\\$\\(", Pattern.CASE_INSENSITIVE)
     };
 
     /**
-     * Checks whether the user input contains prompt injection, jailbreak attempts,
-     * or malicious control overrides.
-     *
-     * @param prompt The incoming user prompt.
-     * @return true if safe, false if a security violation is detected.
+     * Validates prompt length, allowed character sets, and injection patterns.
      */
     public boolean isSafe(String prompt) {
         if (prompt == null || prompt.trim().isEmpty()) {
@@ -33,6 +35,12 @@ public class SecurityGuardrailService {
 
         String cleanedPrompt = prompt.trim();
 
+        // 1. Length bound check (max 500 chars)
+        if (cleanedPrompt.length() > 500) {
+            return false;
+        }
+
+        // 2. Threat & Injection patterns check
         for (Pattern pattern : INJECTION_PATTERNS) {
             if (pattern.matcher(cleanedPrompt).find()) {
                 return false;
