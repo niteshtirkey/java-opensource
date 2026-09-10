@@ -1,4 +1,9 @@
 package com.codingshuttle.youtube.hospitalManagement.config;
 
-public class AuthProviderType {
+public enum AuthProviderType {
+    GOOGLE,
+    EMAIL,
+    FACEBOOK,
+    GITHUB,
+    TWITTER
 }

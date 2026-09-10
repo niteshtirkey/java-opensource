@@ -1,5 +1,13 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { ImageMetadata, ImageOperation, TextLayer, ShapeLayer } from "@/types/editor";
+import {
+  ImageMetadata,
+  ImageOperation,
+  TextLayer,
+  ShapeLayer,
+  BrushStroke,
+  StickerLayer,
+  OverlayEffect,
+} from "@/types/editor";
 
 export interface CropState {
   isActive: boolean;
@@ -10,10 +18,19 @@ export interface CropState {
   height: number;
 }
 
+export interface BrushSettings {
+  type: "neon" | "sparkle" | "marker" | "glow" | "eraser";
+  color: string;
+  size: number;
+  opacity: number;
+}
+
 export interface EditorState {
   sessionId: string | null;
   image: ImageMetadata;
   selectedLayerId: string | null;
+  activeMode: "select" | "crop" | "brush" | "sticker";
+  brushSettings: BrushSettings;
   cropState: CropState;
   historySnapshots: ImageMetadata[];
   historyIndex: number;
@@ -38,6 +55,9 @@ const initialImage: ImageMetadata = {
   name: "sample-artwork.jpg",
   textLayers: [],
   shapeLayers: [],
+  brushStrokes: [],
+  stickers: [],
+  overlayEffect: "none",
 };
 
 const initialCrop: CropState = {
@@ -49,10 +69,19 @@ const initialCrop: CropState = {
   height: 400,
 };
 
+const initialBrush: BrushSettings = {
+  type: "neon",
+  color: "#6366f1",
+  size: 14,
+  opacity: 1.0,
+};
+
 const initialState: EditorState = {
   sessionId: null,
   image: initialImage,
   selectedLayerId: null,
+  activeMode: "select",
+  brushSettings: initialBrush,
   cropState: initialCrop,
   historySnapshots: [initialImage],
   historyIndex: 0,
@@ -81,9 +110,19 @@ export const editorSlice = createSlice({
     setSelectedLayerId: (state, action: PayloadAction<string | null>) => {
       state.selectedLayerId = action.payload;
     },
+    setActiveMode: (state, action: PayloadAction<"select" | "crop" | "brush" | "sticker">) => {
+      state.activeMode = action.payload;
+      if (action.payload !== "crop") {
+        state.cropState.isActive = false;
+      }
+    },
+    setBrushSettings: (state, action: PayloadAction<Partial<BrushSettings>>) => {
+      state.brushSettings = { ...state.brushSettings, ...action.payload };
+    },
     startCrop: (state, action: PayloadAction<"rect" | "circle">) => {
       const minDim = Math.min(state.image.width, state.image.height);
       const size = Math.round(minDim * 0.7);
+      state.activeMode = "crop";
       state.cropState = {
         isActive: true,
         type: action.payload,
@@ -109,6 +148,7 @@ export const editorSlice = createSlice({
     },
     cancelCrop: (state) => {
       state.cropState.isActive = false;
+      state.activeMode = "select";
     },
     applyCrop: (
       state,
@@ -122,6 +162,7 @@ export const editorSlice = createSlice({
       state.image.width = action.payload.width;
       state.image.height = action.payload.height;
       state.cropState.isActive = false;
+      state.activeMode = "select";
       state.selectedLayerId = null;
       pushSnapshot(state);
     },
@@ -143,9 +184,13 @@ export const editorSlice = createSlice({
         name: action.payload.name || "uploaded_image.png",
         textLayers: [],
         shapeLayers: [],
+        brushStrokes: [],
+        stickers: [],
+        overlayEffect: "none",
       };
       state.selectedLayerId = null;
       state.cropState.isActive = false;
+      state.activeMode = "select";
       state.historySnapshots = [JSON.parse(JSON.stringify(state.image))];
       state.historyIndex = 0;
       state.historyOperations = [];
@@ -176,6 +221,10 @@ export const editorSlice = createSlice({
       state.image.filter = action.payload;
       pushSnapshot(state);
     },
+    setOverlayEffect: (state, action: PayloadAction<OverlayEffect>) => {
+      state.image.overlayEffect = action.payload;
+      pushSnapshot(state);
+    },
     toggleFlipHorizontal: (state) => {
       state.image.flipHorizontal = !state.image.flipHorizontal;
       pushSnapshot(state);
@@ -193,22 +242,68 @@ export const editorSlice = createSlice({
       state.selectedLayerId = id;
       pushSnapshot(state);
     },
-    updateTextLayer: (state, action: PayloadAction<{ id: string; x?: number; y?: number; text?: string; fontSize?: number; color?: string }>) => {
+    updateTextLayer: (state, action: PayloadAction<Partial<TextLayer> & { id: string }>) => {
       const layer = state.image.textLayers.find((t) => t.id === action.payload.id);
       if (layer) {
-        if (action.payload.x !== undefined) layer.x = action.payload.x;
-        if (action.payload.y !== undefined) layer.y = action.payload.y;
-        if (action.payload.text !== undefined) layer.text = action.payload.text;
-        if (action.payload.fontSize !== undefined) layer.fontSize = action.payload.fontSize;
-        if (action.payload.color !== undefined) layer.color = action.payload.color;
+        Object.assign(layer, action.payload);
+      }
+    },
+    addBrushStroke: (state, action: PayloadAction<BrushStroke>) => {
+      state.image.brushStrokes.push(action.payload);
+      pushSnapshot(state);
+    },
+    clearBrushStrokes: (state) => {
+      state.image.brushStrokes = [];
+      pushSnapshot(state);
+    },
+    addSticker: (state, action: PayloadAction<{ stickerKey: string; size?: number }>) => {
+      const id = `sticker-${Date.now()}`;
+      state.image.stickers.push({
+        id,
+        stickerKey: action.payload.stickerKey,
+        x: Math.round(state.image.width / 2),
+        y: Math.round(state.image.height / 2),
+        size: action.payload.size || 120,
+        rotation: 0,
+        opacity: 1.0,
+      });
+      state.selectedLayerId = id;
+      pushSnapshot(state);
+    },
+    updateSticker: (state, action: PayloadAction<Partial<StickerLayer> & { id: string }>) => {
+      const sticker = state.image.stickers.find((s) => s.id === action.payload.id);
+      if (sticker) {
+        Object.assign(sticker, action.payload);
       }
     },
     deleteLayer: (state, action: PayloadAction<string>) => {
       const id = action.payload;
       state.image.textLayers = state.image.textLayers.filter((t) => t.id !== id);
       state.image.shapeLayers = state.image.shapeLayers.filter((s) => s.id !== id);
+      state.image.stickers = state.image.stickers.filter((s) => s.id !== id);
       if (state.selectedLayerId === id) {
         state.selectedLayerId = null;
+      }
+      pushSnapshot(state);
+    },
+    applySocialPreset: (state, action: PayloadAction<"ig_post" | "ig_story" | "yt_thumb" | "cinema_wide">) => {
+      switch (action.payload) {
+        case "ig_post":
+          state.image.width = 1080;
+          state.image.height = 1080;
+          break;
+        case "ig_story":
+          state.image.width = 1080;
+          state.image.height = 1920;
+          break;
+        case "yt_thumb":
+          state.image.width = 1280;
+          state.image.height = 720;
+          break;
+        case "cinema_wide":
+          state.image.width = 1920;
+          state.image.height = 816;
+          break;
       }
       pushSnapshot(state);
     },
@@ -263,6 +358,26 @@ export const editorSlice = createSlice({
               state.selectedLayerId = id;
             }
             break;
+          case "add_sticker":
+            if (p.sticker_key) {
+              const id = `sticker-${Date.now()}`;
+              state.image.stickers.push({
+                id,
+                stickerKey: p.sticker_key,
+                x: Math.round(state.image.width / 2),
+                y: Math.round(state.image.height / 2),
+                size: 120,
+                rotation: 0,
+                opacity: 1.0,
+              });
+              state.selectedLayerId = id;
+            }
+            break;
+          case "apply_overlay":
+            if (p.overlay_effect) {
+              state.image.overlayEffect = p.overlay_effect as OverlayEffect;
+            }
+            break;
           case "filter":
             if (p.filter_name) state.image.filter = p.filter_name;
             break;
@@ -297,8 +412,12 @@ export const editorSlice = createSlice({
         flipVertical: false,
         textLayers: [],
         shapeLayers: [],
+        brushStrokes: [],
+        stickers: [],
+        overlayEffect: "none",
       };
       state.selectedLayerId = null;
+      state.activeMode = "select";
       state.cropState = initialCrop;
       state.historySnapshots = [JSON.parse(JSON.stringify(state.image))];
       state.historyIndex = 0;
@@ -311,6 +430,8 @@ export const editorSlice = createSlice({
 export const {
   setSessionId,
   setSelectedLayerId,
+  setActiveMode,
+  setBrushSettings,
   startCrop,
   updateCropPosition,
   updateCropSize,
@@ -323,11 +444,17 @@ export const {
   setContrast,
   setSaturation,
   setFilter,
+  setOverlayEffect,
   toggleFlipHorizontal,
   toggleFlipVertical,
   addTextLayer,
   updateTextLayer,
+  addBrushStroke,
+  clearBrushStrokes,
+  addSticker,
+  updateSticker,
   deleteLayer,
+  applySocialPreset,
   setZoom,
   setLoading,
   setErrorMessage,
@@ -338,3 +465,4 @@ export const {
 } = editorSlice.actions;
 
 export default editorSlice.reducer;
+

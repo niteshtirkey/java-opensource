@@ -74,4 +74,57 @@ public class ImageVioNlpServiceTest {
         assertEquals("adjust_brightness", response.getParsedOperations().get(1).getActionType());
         assertEquals(1.5, response.getParsedOperations().get(1).getParameters().getIntensityLevel());
     }
+
+    @Test
+    void testConversationalSynonymsAndShortcuts() {
+        String prompt = "make it brighter, turn clockwise, convert to b&w, mirror image, and crop to square";
+        ImageEditResponse response = nlpService.processPrompt(prompt);
+
+        assertEquals("active", response.getSessionStatus());
+        List<ImageOperation> ops = response.getParsedOperations();
+        assertEquals(5, ops.size());
+
+        // 1. Brightness
+        assertEquals("adjust_brightness", ops.get(0).getActionType());
+        assertEquals(1.25, ops.get(0).getParameters().getIntensityLevel());
+
+        // 2. Rotate clockwise
+        assertEquals("rotate", ops.get(1).getActionType());
+        assertEquals(90, ops.get(1).getParameters().getRotationDegrees());
+
+        // 3. Black and white filter synonym
+        assertEquals("filter", ops.get(2).getActionType());
+        assertEquals("black_and_white", ops.get(2).getParameters().getFilterName());
+
+        // 4. Mirror / flip
+        assertEquals("flip", ops.get(3).getActionType());
+        assertTrue(ops.get(3).getParameters().getFlipHorizontal());
+
+        // 5. Crop square
+        assertEquals("crop", ops.get(4).getActionType());
+        assertEquals("rectangle", ops.get(4).getParameters().getShapeType());
+    }
+
+    @Test
+    void testCreativeStickersAndAtmosphericOverlays() {
+        String prompt = "resize for instagram story, add neon heart sticker, and apply golden hour overlay";
+        ImageEditResponse response = nlpService.processPrompt(prompt);
+
+        assertEquals("active", response.getSessionStatus());
+        List<ImageOperation> ops = response.getParsedOperations();
+        assertEquals(3, ops.size());
+
+        // 1. Social Media Preset (Instagram Story -> 1080x1920)
+        assertEquals("resize", ops.get(0).getActionType());
+        assertEquals(1080, ops.get(0).getParameters().getTargetWidth());
+        assertEquals(1920, ops.get(0).getParameters().getTargetHeight());
+
+        // 2. Procedural Sticker
+        assertEquals("add_sticker", ops.get(1).getActionType());
+        assertEquals("neon_heart", ops.get(1).getParameters().getStickerKey());
+
+        // 3. Atmospheric Overlay
+        assertEquals("apply_overlay", ops.get(2).getActionType());
+        assertEquals("golden_hour", ops.get(2).getParameters().getOverlayEffect());
+    }
 }

@@ -12,6 +12,8 @@ export interface OperationParameters {
   shape_type?: string;
   flip_horizontal?: boolean;
   flip_vertical?: boolean;
+  sticker_key?: string;
+  overlay_effect?: string;
 }
 
 export interface ImageOperation {
@@ -25,6 +27,8 @@ export interface ImageOperation {
     | "color_adjust"
     | "add_text"
     | "add_shape"
+    | "add_sticker"
+    | "apply_overlay"
     | "flip"
     | string;
   parameters: OperationParameters;
@@ -43,6 +47,13 @@ export interface TextLayer {
   y: number;
   fontSize: number;
   color: string;
+  fontFamily?: string;
+  strokeColor?: string;
+  strokeWidth?: number;
+  shadowColor?: string;
+  shadowBlur?: number;
+  backgroundPill?: boolean;
+  pillColor?: string;
 }
 
 export interface ShapeLayer {
@@ -54,6 +65,38 @@ export interface ShapeLayer {
   height: number;
   color: string;
 }
+
+export interface BrushPoint {
+  x: number;
+  y: number;
+}
+
+export interface BrushStroke {
+  id: string;
+  type: "neon" | "sparkle" | "marker" | "glow" | "eraser";
+  color: string;
+  size: number;
+  opacity: number;
+  points: BrushPoint[];
+}
+
+export interface StickerLayer {
+  id: string;
+  stickerKey: string; // e.g. "crown", "neon_heart", "verified", "sparkle_star", "fire", "cyber_badge", "film_frame"
+  x: number;
+  y: number;
+  size: number;
+  rotation: number;
+  opacity: number;
+}
+
+export type OverlayEffect =
+  | "none"
+  | "film_dust"
+  | "golden_hour"
+  | "cyber_glitch"
+  | "prism_rainbow"
+  | "lens_flare";
 
 export interface ImageMetadata {
   width: number;
@@ -69,4 +112,8 @@ export interface ImageMetadata {
   name: string;
   textLayers: TextLayer[];
   shapeLayers: ShapeLayer[];
+  brushStrokes: BrushStroke[];
+  stickers: StickerLayer[];
+  overlayEffect: OverlayEffect;
 }
+
