@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { ImageEditResponse } from "@/types/editor";
 import { SecuritySanitizer } from "@/utils/security";
 
@@ -7,36 +7,27 @@ const apiClient = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
-  timeout: 30000,
+  timeout: 15000,
 });
 
-export async function initSession(sessionId: string) {
-  const response = await apiClient.post("/api/sessions/init", { sessionId });
-  return response.data;
-}
-
-export async function sendPromptCommand(
-  prompt: string,
-  sessionId?: string | null
-): Promise<ImageEditResponse> {
-  const validation = SecuritySanitizer.validatePrompt(prompt);
-  if (!validation.valid) {
-    return {
-      session_status: "blocked",
-      error_message: validation.error || "Input failed security validation.",
-      parsed_operations: [],
-    };
+/**
+ * Executes an async task with exponential backoff retry.
+ */
+async function withRetry<T>(fn: () => Promise<T>, retries = 2, delayMs = 600): Promise<T> {
+  try {
+    return await fn();
+  } catch (error) {
+    if (retries <= 0) throw error;
+    await new Promise((resolve) => setTimeout(resolve, delayMs));
+    return withRetry(fn, retries - 1, delayMs * 2);
   }
-
-  const cleanPrompt = SecuritySanitizer.sanitize(prompt);
-
-  const response = await apiClient.post(
-    "/api/parse/command",
-    { prompt: cleanPrompt },
-    {
-      headers: sessionId ? { "X-Session-ID": sessionId } : {},
-    }
-  );
-
-  return response.data;
 }
+
+export async function initSession(sessionId: string) {
+  return withRetry(async () => {
+    const response = await apiClient.post("api/sessions/init", { sessionId });
+    return response.data;
+  });
+}
+
+

@@ -1,23 +1,35 @@
 package com.imagevio.controller;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.imagevio.dto.ImageEditResponse;
+import com.imagevio.dto.ImageOperation;
 import com.imagevio.dto.PromptRequest;
 import com.imagevio.dto.SessionInitResponse;
 import com.imagevio.entity.EditSessionEntity;
 import com.imagevio.repository.EditSessionRepository;
 import com.imagevio.service.ImageVioNlpService;
 import com.imagevio.service.TokenService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * REST API Gateway Controller for Imgevio Studio.
+ * Handles session lifecycles, NLP command compilation, and state hydration.
+ */
 @RestController
 @RequestMapping("/api")
 @CrossOrigin(origins = {"http://localhost:3000"}, allowCredentials = "true")
 public class ImgevioApiController {
+
+    private static final Logger log = LoggerFactory.getLogger(ImgevioApiController.class);
 
     private final ImageVioNlpService nlpService;
     private final EditSessionRepository editSessionRepository;
@@ -81,31 +93,54 @@ public class ImgevioApiController {
                     : UUID.randomUUID().toString();
 
             String jsonPayload = objectMapper.writeValueAsString(response.getParsedOperations());
-            EditSessionEntity sessionEntity = new EditSessionEntity(
-                    sid,
-                    prompt,
-                    response.getSessionStatus(),
-                    jsonPayload
-            );
+            
+            EditSessionEntity sessionEntity = editSessionRepository.findBySessionId(sid).orElse(null);
+            if (sessionEntity == null) {
+                sessionEntity = new EditSessionEntity(
+                        sid,
+                        prompt,
+                        response.getSessionStatus(),
+                        jsonPayload
+                );
+            } else {
+                sessionEntity.setPrompt(prompt);
+                sessionEntity.setStatus(response.getSessionStatus());
+                sessionEntity.setOperationsJson(jsonPayload);
+            }
+            
             editSessionRepository.save(sessionEntity);
         } catch (Exception e) {
-            System.err.println("DB Save Exception: " + e.getMessage());
+            log.error("Failed to persist session to database: {}", e.getMessage());
         }
 
         return ResponseEntity.ok(response);
     }
 
     /**
-     * Session Retrieval Endpoint: GET /api/sessions/{sessionId}
+     * Session Retrieval & Hydration Endpoint: GET /api/sessions/{sessionId}
      */
     @GetMapping("/sessions/{sessionId}")
     public ResponseEntity<?> getSession(@PathVariable String sessionId) {
         return editSessionRepository.findBySessionId(sessionId)
-                .map(s -> ResponseEntity.ok(Map.of(
-                        "sessionId", s.getSessionId(),
-                        "status", s.getStatus(),
-                        "createdAt", s.getCreatedAt()
-                )))
+                .map(s -> {
+                    List<ImageOperation> ops = Collections.emptyList();
+                    try {
+                        if (s.getOperationsJson() != null && !s.getOperationsJson().isBlank()) {
+                            ops = objectMapper.readValue(s.getOperationsJson(), new TypeReference<List<ImageOperation>>() {});
+                        }
+                    } catch (Exception e) {
+                        log.warn("Failed to deserialize operations for session {}: {}", sessionId, e.getMessage());
+                    }
+
+                    return ResponseEntity.ok(Map.of(
+                            "sessionId", s.getSessionId(),
+                            "status", s.getStatus(),
+                            "prompt", s.getPrompt() != null ? s.getPrompt() : "",
+                            "operations", ops,
+                            "createdAt", s.getCreatedAt() != null ? s.getCreatedAt().toString() : ""
+                    ));
+                })
                 .orElse(ResponseEntity.notFound().build());
     }
 }
+

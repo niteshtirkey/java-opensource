@@ -7,7 +7,6 @@ import { setSessionId } from "@/store/editorSlice";
 import CanvasEditor from "@/components/CanvasEditor";
 import Toolbox from "@/components/Toolbox";
 import HistoryPanel from "@/components/HistoryPanel";
-import CommandBar from "@/components/CommandBar";
 import Link from "next/link";
 import { Sparkles, ArrowLeft } from "lucide-react";
 
@@ -53,7 +52,6 @@ export default function EditorPage() {
         <Toolbox />
         <main className="flex-1 flex flex-col relative overflow-hidden">
           <CanvasEditor />
-          <CommandBar />
         </main>
         <HistoryPanel />
       </div>

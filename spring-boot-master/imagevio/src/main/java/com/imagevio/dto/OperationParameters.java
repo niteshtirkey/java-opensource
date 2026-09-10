@@ -44,6 +44,12 @@ public class OperationParameters {
     @JsonProperty("flip_vertical")
     private boolean flipVertical;
 
+    @JsonProperty("sticker_key")
+    private String stickerKey;
+
+    @JsonProperty("overlay_effect")
+    private String overlayEffect;
+
     public OperationParameters() {
     }
 
@@ -149,5 +155,21 @@ public class OperationParameters {
 
     public void setFlipVertical(boolean flipVertical) {
         this.flipVertical = flipVertical;
+    }
+
+    public String getStickerKey() {
+        return stickerKey;
+    }
+
+    public void setStickerKey(String stickerKey) {
+        this.stickerKey = stickerKey;
+    }
+
+    public String getOverlayEffect() {
+        return overlayEffect;
+    }
+
+    public void setOverlayEffect(String overlayEffect) {
+        this.overlayEffect = overlayEffect;
     }
 }
