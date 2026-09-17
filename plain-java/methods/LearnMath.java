@@ -4,6 +4,7 @@ public class LearnMath {
   public static void main(String[] args) {
     int a = 3;
     int b = 4;
+    
     System.out.println(Math.min(a, b));
     System.out.println(getRandomNumber(100, 200));
     System.out.println(Math.sqrt(16));
