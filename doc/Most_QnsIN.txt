@@ -1,0 +1,112 @@
+Java:
+1. Internal working of hashmap?
+2. Abstract class vs Interface?
+3. equals() vs Hashcode()?
+4. iterator vs Listiterartor?
+5. java 8 features?
+6. Abstraction vs encapsulation?
+7. method overloading vs method overriding?
+8. What is the contract between equals() and hashCode()?
+9. map vs flatMap?
+10. What happens if we override equals() but not hashCode()?
+11. what is immutable class in java? how to create?
+12. What is Fail-Fast and Fail-Safe Iterator?
+13. Functional Interface & types
+14. multi-threding? explain
+15. diff b/w comprator and comparable?
+16.  hashmap vs concurrentHashmap vs HashTable?
+17. ArrayList vs LinkedList
+18. Thread pool? explain
+19. diff b/w volatile and synchronized keywords?
+20. throw vs throws
+21. checked Exception vs Unchecked Exception
+22. What is immutability? How to create immutable classes?
+23. why string is imuutable?
+24. error vs exception?
+25. OOps Principle? explain
+26. JAVA 8 feature? explain
+27. java 17 feature> explain
+28. association, aggregation and composition?
+29. cloning: deep copy vs shallow copy?
+30. what happens during resizing in collections?
+31. future vs completable future?
+32. How does HashMap work internally? what happens during resizing?
+33. ConcurrentHashmap vs Collections.synchronizedMap()
+34. Thread lifecycle + Thred.start() vs run()
+35. ExecutorService vs ForkJoinPool
+36. Custom sorting using Comparator & Comparable
+37. JAva Memory Model(JMM) + Volatile
+38. How to detect + fix memory leaks in java?
+39. this vs super vs final keyword?
+40. final vs finally vs finalize() ?
+
+
+
+SpringBoot:
+1. what is DI and types?
+2. What is the difference between PUT and POST in REST APIs?
+3. Spring Boot uses Tomcat by default. How do you use Jetty or WebLogic or WildFly instead?
+4.solid principle:  S-> Single Responsibility Principle
+                    O-> Open/Closed Principle
+                    L-> Liskov Substitution Principle
+                    I->  Interface Segregation Principle
+                    D->  Dependency Inversion Principle:
+5. All annotation in spring boot? explain all
+6. Spring Actuator?
+7. lifecycle of a spring bean?
+8. @Autowired vs @Inject
+9. How @Transactional work internally(Propagattion + Isolation)?
+10. bean? -> java objects that are managed by the spring IoC container are called beans.
+11. @Transaction annotation
+12. How to externalize configuration in spring boot?
+13. What are spring boot starter?
+14. How to create custom annotation in spring?
+15. ApplicationContext vs bean factory?
+16. How spring performs DI using reflection?
+17. JWT Explain?
+18.  @transient vs @Qualifier vs @Primary? explain
+19. @PathVariable vs @QueryParam
+20. Put vs Patch
+21. @component/@service/@reposiitory?
+22. Architecrure of spring security?
+23. Architecrure of kafka?
+24. Architecrure of microservices?
+25. How to implement spring security in your project?
+26. how to implement redis cache?
+27. 30. Circuit breaker? saga pattern? explain 
+28. spring vs spring boot? explain
+29. monolithic vs microservice architecture? explain
+30. controller vs restcontroller annotation? explain
+31. explain complete flow of  request: controller-> service->repository.
+32. how does @RequestBody working spring boot?
+33. explain complete flow of how a table is created in the database using java, springboot, and JPA - starting from defining an entity class up to how it becomes a table in sql?
+34. 
+
+MICROSEERVICES:
+1. What is service discovery?
+2. Rest vs kafka vs grpc- which  to use when?
+3. Common microservices challenges and solutons?
+4. Microservices security: OAuth2/JWT?
+5. What is distributed tracing?(zipkin/sleuth/openTelemetry)
+6. circuit breaker, retry, rate limiting?
+7. Inter-service transaction (saga pattern)
+8. Role of an API Gateway?
+9. Spring cloud config server?
+41. 30. How to implement Circuit breaker & saga pattern?in your project explain 
+
+CODING/PROBLEM:
+1. 2nd highest numbers in array?
+2. reverse linkedlist(iterative + recursive)
+3. first-non- repeating character in a string?
+4. implement an LRU cache?
+5. find pairs sum equal to a target?
+6. producer- consumer using wait() & notify()?
+7. REST API -> top 5 highest salary by department?
+8. sort employee by salary -> then by name?
+9. calculate total by user ID using stream?
+10. implement API  rate limiting in java?
+11. Longest Substring without repeating characters?
+12. second highest salary in sql
+13. grouping by concept in java stream vs in sql
+14. count occureance of character in string
+15. max salary by department
