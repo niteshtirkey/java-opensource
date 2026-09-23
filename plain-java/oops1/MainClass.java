@@ -1,4 +1,4 @@
-package opps1;
+package oops1;
 
 public class MainClass {
     public static void main(String[] args) {

@@ -1,6 +1,6 @@
-package opps3.learnEncapculation;
+package oops3.learnEncapculation;
 
-import opps3.learnPackage.Persion;
+import oops3.learnPackage.Persion;
 
 public class MainInCapculation {
     public static void main(String[] args) {

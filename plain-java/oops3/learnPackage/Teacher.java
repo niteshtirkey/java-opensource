@@ -1,4 +1,4 @@
-package opps3.learnPackage;
+package oops3.learnPackage;
 
 public class Teacher {
     public int teachingClass;

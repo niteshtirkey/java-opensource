@@ -1,6 +1,6 @@
-package opps3.package2;
+package oops3.package2;
 
-import opps3.learnPackage.Teacher;
+import oops3.learnPackage.Teacher;
 
 public class MainInPackage2 extends Teacher{
     public static void main(String[] args) {

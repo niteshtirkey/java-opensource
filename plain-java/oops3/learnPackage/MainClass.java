@@ -1,4 +1,4 @@
-package opps3.learnPackage;
+package oops3.learnPackage;
 
 public class MainClass {
    public static void main(String[] args) {

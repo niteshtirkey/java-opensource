@@ -1,4 +1,4 @@
-package opps2;
+package oops2;
 
 public class Vehicle {
     
